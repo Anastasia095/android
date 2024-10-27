@@ -1,51 +1,47 @@
 package com.example.connectfour
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
-    // Register the activity result launcher for the options button
-    private val optionsLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val data: Intent? = result.data
-            if (data != null) {
-                // Get the selected game mode from the result
-                val gameMode = data.getStringExtra("GAME_MODE")
-                // Display the selected game mode in the format "Easy mode", "Medium mode", or "Hard mode"
-                Toast.makeText(this, "$gameMode mode", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Set content view to the main activity layout
         setContentView(R.layout.activity_main)
 
-        // Find the Connect Four and Options buttons
-        val connectFourButton: Button = findViewById(R.id.connect_four_button)
-        val optionsButton: Button = findViewById(R.id.options_button)
+        // Instantiate an instance of BottomNavigationView
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
 
-        // Click listener for the Connect Four button to start the Board activity
-        connectFourButton.setOnClickListener {
-            // Create an intent to start the Board activity
-            val boardFragmentIntent = Intent(this@MainActivity, BoardFragment::class.java)
-            startActivity(boardFragmentIntent) // Launch the game board activity
-        }
+        // Instantiate an instance of NavHostFragment
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.fragment_container) as NavHostFragment?
 
-        // Click listener for the Options button to start the GameOptions activity
-        optionsButton.setOnClickListener {
-            // Create an intent to start the GameOptions activity
-            val optionsIntent = Intent(this@MainActivity, GameOptionsFragment::class.java)
-            optionsLauncher.launch(optionsIntent) // Launch the options activity
+        // If the NavHostFragment object is not null
+        navHostFragment?.let {
+            // Instantiate an instance of NavController
+            val navController = it.navController
+
+            // Define top-level destinations for AppBarConfiguration
+            val topLevelDestinations = setOf(R.id.boardFragment, R.id.gameOptionsFragment)
+
+            // Instantiate an instance of AppBarConfiguration with top-level destinations
+            val appBarConfiguration = AppBarConfiguration.Builder(
+                R.id.boardFragment,
+                R.id.gameOptionsFragment
+            ).build()
+
+            // Call static method NavigationUI.setupActionBarWithNavController
+            NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
+
+            // Call static method NavigationUI.setupWithNavController
+            NavigationUI.setupWithNavController(bottomNavigationView, navController)
         }
     }
 }
